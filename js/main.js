@@ -1,39 +1,50 @@
 const buttons = document.querySelectorAll('.button');
 
 function addShadow(button) {
-  button.classList.add('shadow');
+    return new Promise((resolve) => {
+        button.classList.add('shadow');
+        resolve();
+    });
 }
 
 function removeShadow(button) {
-  button.classList.remove('shadow');
+    return new Promise((resolve) => {
+        button.classList.remove('shadow');
+        resolve();
+    });
 }
 
-function areOddButtonsPressed() {
-  return Array.from(buttons).every((button, index) => index % 2 === 0 ? button.classList.contains('shadow') : true);
-}
-
-function areEvenButtonsPressed() {
-  return Array.from(buttons).every((button, index) => index % 2 !== 0 ? button.classList.contains('shadow') : true);
+function areButtonsPressed(predicate) {
+    return Promise.all(Array.from(buttons).map((button, index) => {
+        if (index % 2 === predicate) {
+            return button.classList.contains('shadow');
+        }
+        return true;
+    }));
 }
 
 buttons.forEach(button => {
-  button.addEventListener('click', () => {
-    if (!button.classList.contains('shadow')) {
-      addShadow(button);
-    } else {
-      removeShadow(button);
-    }
+    button.addEventListener('click', async () => {
+        if (!button.classList.contains('shadow')) {
+            await addShadow(button);
+        } else {
+            await removeShadow(button);
+        }
 
-    if (areOddButtonsPressed()) {
-      console.log('Натиснуті всі непарні кнопки!');
-    }
+        const areOddButtons = await areButtonsPressed(0);
+        const areEvenButtons = await areButtonsPressed(1);
+        const areAllButtonsPressed = await Promise.all(Array.from(buttons).map(button => button.classList.contains('shadow')));
 
-    if (areEvenButtonsPressed()) {
-      console.log('Натиснуті всі парні кнопки!');
-    }
+        if (areOddButtons.every(Boolean)) {
+            console.log('Натиснуті всі непарні кнопки!');
+        }
 
-    if (Array.from(buttons).every(button => button.classList.contains('shadow'))) {
-      console.log('Всі кнопки натиснуті!');
-    }
-  });
+        if (areEvenButtons.every(Boolean)) {
+            console.log('Натиснуті всі парні кнопки!');
+        }
+
+        if (areAllButtonsPressed.every(Boolean)) {
+            console.log('Всі кнопки натиснуті!');
+        }
+    });
 });
